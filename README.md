@@ -71,3 +71,22 @@ cd oxidizer
 cargo build --release
 cargo install --path .
 ```
+
+# ⌨️ Quick Start
+
+```bash
+# Basic oxidation using the Brown algorithm
+oxidizer -i music.mp3 -o output.wav -a brown -n 0.05
+
+# Deep "Heavy" oxidation with multiple passes
+oxidizer -i music.mp3 -o deep_rust.wav -a heavy -n 0.01 -p 2
+````
+
+# ⚙️ Built With
+
+- [Rust](https://rust-lang.org/) -- duh.
+- [Symphonia](https://github.com/pdeljanov/Symphonia) -- a pure Rust audio decoding library. Used for probing and decoding MP3 files into raw PCM data.
+- [Hound](https://github.com/ruuda/hound) -- a WAV encoding and decoding library in Rust. Used to encode transformed PCM data into .wav file.
+- [clap](https://docs.rs/clap/latest/clap/) -- bread and butter of CLI argument parsing.
+
+
