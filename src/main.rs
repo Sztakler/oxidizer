@@ -1,4 +1,4 @@
-use std::fs::File;
+use std::{f32, fs::File};
 use symphonia::{
     self,
     core::{
@@ -11,16 +11,57 @@ use symphonia::{
     },
 };
 
+pub enum OxidizerAlgorithm {
+    Light, // Pink Noise (warm and clean)
+    Brown, // Brown Noise (deep and mellow)
+    Heavy, // Extreme Low Pass (it's all about that bass, no treble)
+}
+
 struct Oxidizer {
     last_sample: f32,
-    alpha: f32,
+    buffer: Vec<f32>,
 }
 
 impl Oxidizer {
-    fn process(&mut self, input: f32) -> f32 {
-        let output = self.last_sample + self.alpha * (input - self.last_sample);
-        self.last_sample = output;
-        output
+    fn new() -> Self {
+        Self {
+            last_sample: 0.0,
+            buffer: Vec::new(),
+        }
+    }
+
+    fn process(&mut self, samples: Vec<f32>, algorithm: OxidizerAlgorithm) -> &mut Self {
+        let alpha = match algorithm {
+            OxidizerAlgorithm::Light => 0.1,
+            OxidizerAlgorithm::Brown => 0.02,
+            OxidizerAlgorithm::Heavy => 0.005,
+        };
+
+        for sample in samples {
+            let output = self.last_sample + alpha * (sample - self.last_sample);
+            self.last_sample = output;
+
+            self.buffer.push(output);
+        }
+
+        self
+    }
+
+    fn normalize(&mut self) -> &mut Self {
+        let max_peak = self.buffer.iter().map(|s| s.abs()).fold(0.0, f32::max);
+
+        if max_peak > 0.0 {
+            let scale_factor = 0.95 / max_peak;
+            for sample in &mut self.buffer {
+                *sample *= scale_factor;
+            }
+        }
+
+        self
+    }
+
+    fn collect_samples(&mut self) -> Vec<f32> {
+        std::mem::take(&mut self.buffer)
     }
 }
 
@@ -76,16 +117,13 @@ fn load_mp3(path: &str) -> Vec<f32> {
 fn main() {
     let input_samples: Vec<f32> = load_mp3("the-smiths.mp3");
 
-    let mut oxidizer = Oxidizer {
-        last_sample: 0.0,
-        alpha: 0.05,
-    };
+    let mut oxidizer = Oxidizer::new();
 
-    println!("Oxidizing...");
-    let output_samples: Vec<f32> = input_samples
-        .into_iter()
-        .map(|sample| oxidizer.process(sample))
-        .collect();
+    println!("Oxidizing samples...");
+    oxidizer
+        .process(input_samples, OxidizerAlgorithm::Brown)
+        .normalize();
+    let output_samples = oxidizer.collect_samples();
 
     let spec = hound::WavSpec {
         channels: 1,
