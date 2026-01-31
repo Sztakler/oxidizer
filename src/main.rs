@@ -1,3 +1,4 @@
+use clap::Parser;
 use rand::Rng;
 use std::{f32, fs::File};
 use symphonia::{
@@ -12,6 +13,38 @@ use symphonia::{
     },
 };
 
+#[derive(Parser, Debug)]
+#[command(
+    author,
+    version,
+    about = "An audio transformer that makes everything sound like a Brownian noise"
+)]
+struct Args {
+    /// Path to the input file (e.g., music.mp3)
+    #[arg(short, long)]
+    input: String,
+    /// Path to the output file (e.g., output.wav)
+    #[arg(short, long, default_value = "output.wav")]
+    output: String,
+
+    /// The oxidation algorithm to use
+    #[arg(short, long, default_value = "brown")]
+    algorithm: String,
+
+    /// Intensity of the effect (0.0 to 1.0)
+    #[arg(short = 'n', long, default_value_t = 0.05)]
+    intensity: f32,
+
+    /// Sample rate of the audio (e.g. 44100 Hz)
+    #[arg(short = 's', long, default_value_t = 44100)]
+    sample_rate: u32,
+
+    /// Apply an extra pass of the filter for more "rust"
+    #[arg(short, long, default_value_t = 1)]
+    passes: u32,
+}
+
+#[derive(Debug, Clone, Copy)]
 pub enum OxidizerAlgorithm {
     Light, // Pink Noise (warm and clean)
     Brown, // Brown Noise (deep and mellow)
@@ -19,15 +52,21 @@ pub enum OxidizerAlgorithm {
 }
 
 struct Oxidizer {
-    last_sample: f32,
+    last_l: f32,
+    last_r: f32,
+    brown_state_l: f32,
+    brown_state_r: f32,
     buffer: Vec<f32>,
 }
 
 impl Oxidizer {
     fn new() -> Self {
         Self {
-            last_sample: 0.0,
             buffer: Vec::new(),
+            last_l: 0.0,
+            last_r: 0.0,
+            brown_state_l: 0.0,
+            brown_state_r: 0.0,
         }
     }
 
@@ -46,10 +85,12 @@ impl Oxidizer {
             OxidizerAlgorithm::Heavy => 0.005,
         };
 
-        for sample in &mut self.buffer {
-            let output = self.last_sample + alpha * (*sample - self.last_sample);
-            self.last_sample = output;
-            *sample = output
+        for i in (0..self.buffer.len()).step_by(2) {
+            self.last_l = self.last_l + alpha * (self.buffer[i] - self.last_l);
+            self.buffer[i] = self.last_l;
+
+            self.last_r = self.last_r + alpha * (self.buffer[i + 1] - self.last_r);
+            self.buffer[i + 1] = self.last_r;
         }
 
         self
@@ -75,29 +116,29 @@ impl Oxidizer {
     // Leaky Random Walk
     fn apply_brownian_texture(&mut self, intensity: f32) -> &mut Self {
         let mut rng = rand::rng();
-        let mut brown_noise_state: f32 = 0.0;
         let step_size = 0.1;
         let damping = 0.98;
         let perceived_intensity = (10.0f32.powf(intensity) - 1.0) / 9.0;
 
-        for sample in &mut self.buffer {
-            // Generate Brown Noise step (random walk)
-            let white_step: f32 = rng.random_range(-1.0..1.0);
-            // Smooth step
-            brown_noise_state =
-                (brown_noise_state * damping + white_step * step_size).clamp(-1.0, 1.0);
-            let current_value = *sample;
-            let noise_mask = brown_noise_state * perceived_intensity;
-            let combined = current_value + noise_mask;
-            *sample = combined.tanh();
+        for i in (0..self.buffer.len()).step_by(2) {
+            self.brown_state_l = (self.brown_state_l * damping
+                + (rng.random_range(-1.0..1.0) * step_size))
+                .clamp(-1.0, 1.0);
+            self.brown_state_r = (self.brown_state_r * damping
+                + (rng.random_range(-1.0..1.0) * step_size))
+                .clamp(-1.0, 1.0);
+
+            self.buffer[i] = (self.buffer[i] + self.brown_state_l * perceived_intensity).tanh();
+            self.buffer[i + 1] =
+                (self.buffer[i + 1] + self.brown_state_r * perceived_intensity).tanh();
         }
 
         self
     }
 }
 
-fn load_mp3(path: &str) -> Vec<f32> {
-    println!("Loading file: {}", path);
+fn load_mp3(path: &std::path::Path) -> Vec<f32> {
+    println!("Loading file: {}", path.display());
 
     let src = File::open(path).expect("Cannot open file");
     let mss = MediaSourceStream::new(Box::new(src), Default::default());
@@ -135,7 +176,17 @@ fn load_mp3(path: &str) -> Vec<f32> {
 
         match decoder.decode(&packet) {
             Ok(symphonia::core::audio::AudioBufferRef::F32(buf)) => {
-                samples.extend_from_slice(buf.chan(0));
+                let chan_l = buf.chan(0);
+                let chan_r = if buf.spec().channels.count() > 1 {
+                    buf.chan(1)
+                } else {
+                    buf.chan(0)
+                };
+
+                for i in 0..buf.frames() {
+                    samples.push(chan_l[i]);
+                    samples.push(chan_r[i]);
+                }
             }
             Ok(_) => {}
             Err(Error::IoError(_)) => break,
@@ -145,31 +196,48 @@ fn load_mp3(path: &str) -> Vec<f32> {
     samples
 }
 
-fn main() {
-    let input_samples: Vec<f32> = load_mp3("the-smiths.mp3");
-
-    println!("Oxidizing samples...");
-    let output_samples = Oxidizer::new()
-        .consume(input_samples)
-        .process(OxidizerAlgorithm::Brown)
-        .apply_brownian_texture(0.1)
-        .normalize()
-        .collect_samples();
-
+fn save_audio(path: &String, data: Vec<f32>, sample_rate: u32) {
     let spec = hound::WavSpec {
-        channels: 1,
-        sample_rate: 44100,
+        channels: 2,
+        sample_rate,
         bits_per_sample: 16,
         sample_format: hound::SampleFormat::Int,
     };
 
-    let output_path = "brownized.wav";
-    println!("Writing to {}...", output_path);
-    let mut writer = hound::WavWriter::create(output_path, spec).unwrap();
-    output_samples.into_iter().for_each(|sample| {
+    println!("Writing to {}...", path);
+    let mut writer = hound::WavWriter::create(path, spec).unwrap();
+    data.into_iter().for_each(|sample| {
         let scaled_sample = (sample * i16::MAX as f32) as i16;
         writer.write_sample(scaled_sample).unwrap()
     });
 
     writer.finalize().unwrap();
+}
+
+fn main() {
+    let args = Args::parse();
+
+    let input_path = std::path::Path::new(&args.input);
+    let input_samples: Vec<f32> = load_mp3(input_path);
+
+    let algorithm = match args.algorithm.to_lowercase().as_str() {
+        "light" => OxidizerAlgorithm::Light,
+        "heavy" => OxidizerAlgorithm::Heavy,
+        _ => OxidizerAlgorithm::Brown,
+    };
+
+    println!("Oxidizing samples...");
+    let mut oxidizer = Oxidizer::new();
+    oxidizer.consume(input_samples);
+
+    for _ in 0..args.passes {
+        oxidizer.process(algorithm);
+    }
+
+    let output_samples = oxidizer
+        .apply_brownian_texture(args.intensity)
+        .normalize()
+        .collect_samples();
+
+    save_audio(&args.output, output_samples, args.sample_rate);
 }
