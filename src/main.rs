@@ -72,7 +72,7 @@ impl Oxidizer {
         std::mem::take(&mut self.buffer)
     }
 
-    // Voss-McCartney Filter Bank algorithm
+    // Leaky Random Walk
     fn apply_brownian_texture(&mut self, intensity: f32) -> &mut Self {
         let mut rng = rand::rng();
         let mut brown_noise_state: f32 = 0.0;
