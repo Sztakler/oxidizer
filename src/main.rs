@@ -78,7 +78,7 @@ fn main() {
 
     let mut oxidizer = Oxidizer {
         last_sample: 0.0,
-        alpha: 0.5,
+        alpha: 0.05,
     };
 
     println!("Oxidizing...");
