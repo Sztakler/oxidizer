@@ -2,6 +2,24 @@
 
 An audio transformer that makes everything sound like a Brownian noise ☺️🎧🌊
 
+## Demo 🎧
+
+| Version | Player |
+| :--- | :--- |
+| **Original** | [original.mp3](https://github.com/user-attachments/assets/a9f8599c-e704-4494-8b8b-e31233a499f6) |
+| **Oxidized (Brown)** | [oxidized.mp3](https://github.com/user-attachments/assets/b424db51-79bf-4d74-a72d-f5dc46c6b4e2)|
+
+> **Credits:** Music by **[massobeats - rose water](https://www.youtube.com/watch?v=xakBzg5atsM)**. Processed with oxidizer CLI.
+
+### 📊 Visual Oxidation (Spectrogram Analysis)
+
+The following spectrograms illustrate the frequency response of the algorithm. Notice how the high frequencies (above 16kHz) are attenuated and replaced by the textured Brownian noise floor.
+
+| Original Audio | Oxidized Audio |
+| :---: | :---: |
+| ![Original Spectrogram](assets/img/spectrogram-original.png) | ![Oxidized Spectrogram](assets/img/spectrogram-oxidized.png) |
+| *Full spectrum detail* | *Warm, low-passed texture* |
+
 ## Background
 
 Well, I got bored while studin' for my Psychology exams, so I procrastinated on this side project a bit. Oh, and recently I've realised that constantly listening to the Brown Noise during work keeps me focused.
@@ -48,8 +66,27 @@ cargo install --git https://github.com/Sztakler/oxidizer.git
 
 ### Clone and Build
 ```bash
-git clone [https://github.com/Sztakler/oxidizer.git](https://github.com/Sztakler/oxidizer.git)
+git clone https://github.com/Sztakler/oxidizer.git
 cd oxidizer
 cargo build --release
 cargo install --path .
 ```
+
+# ⌨️ Quick Start
+
+```bash
+# Basic oxidation using the Brown algorithm
+oxidizer -i music.mp3 -o output.wav -a brown -n 0.05
+
+# Deep "Heavy" oxidation with multiple passes
+oxidizer -i music.mp3 -o deep_rust.wav -a heavy -n 0.01 -p 2
+````
+
+# ⚙️ Built With
+
+- [Rust](https://rust-lang.org/) -- duh.
+- [Symphonia](https://github.com/pdeljanov/Symphonia) -- a pure Rust audio decoding library. Used for probing and decoding MP3 files into raw PCM data.
+- [Hound](https://github.com/ruuda/hound) -- a WAV encoding and decoding library in Rust. Used to encode transformed PCM data into .wav file.
+- [clap](https://docs.rs/clap/latest/clap/) -- bread and butter of CLI argument parsing.
+
+
