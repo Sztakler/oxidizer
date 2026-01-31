@@ -152,7 +152,7 @@ fn main() {
     let output_samples = Oxidizer::new()
         .consume(input_samples)
         .process(OxidizerAlgorithm::Brown)
-        .apply_brownian_texture(0.15)
+        .apply_brownian_texture(0.1)
         .normalize()
         .collect_samples();
 
