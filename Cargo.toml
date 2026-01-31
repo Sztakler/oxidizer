@@ -2,7 +2,7 @@
 name = "oxidizer"
 version = "0.1.0"
 edition = "2024"
-author = "metarth"
+authors = ["metarth"]
 license = "MIT"
 
 [dependencies]
