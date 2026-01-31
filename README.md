@@ -4,11 +4,12 @@ An audio transformer that makes everything sound like a Brownian noise ☺️�
 
 ## Demo
 
-**Original Track:**
-<audio src="assets/audio/original.mp3" controls></audio>
+| Version | Player |
+| :--- | :--- |
+| **Original** | [original.mp3](https://github.com/user-attachments/files/24984606/original.mp3)|
+| **Oxidized (Brown)** | [oxidized.mp3](https://github.com/user-attachments/files/24984608/oxidized.mp3)|
 
-**Oxidized (Algorithm: Brown, Intensity: 0.05):**
-<audio src="assets/audio/oxidized.mp3" controls></audio>
+> **Credits:** Music by **massobeats - rose water**. Processed with oxidizer CLI.
 
 
 ## Background
