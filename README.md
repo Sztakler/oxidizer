@@ -46,10 +46,7 @@ cargo install --git https://github.com/Sztakler/oxidizer.git
 
 ## From source
 
-### 1. Prerequisites
-Ensure you have the Rust toolchain installed. If not, get it from [rustup.rs](https://rustup.rs/).
-
-### 2. Clone and Build
+### Clone and Build
 ```bash
 git clone [https://github.com/Sztakler/oxidizer.git](https://github.com/Sztakler/oxidizer.git)
 cd oxidizer
