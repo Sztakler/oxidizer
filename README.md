@@ -11,6 +11,14 @@ An audio transformer that makes everything sound like a Brownian noise ☺️�
 
 > **Credits:** Music by **massobeats - rose water**. Processed with oxidizer CLI.
 
+### 📊 Visual Oxidation (Spectrogram Analysis)
+
+The following spectrograms illustrate the frequency response of the algorithm. Notice how the high frequencies (above 16kHz) are attenuated and replaced by the textured Brownian noise floor.
+
+| Original Audio | Oxidized Audio |
+| :---: | :---: |
+| ![Original Spectrogram](assets/img/spectrogram-original.jpg) | ![Oxidized Spectrogram](assets/img/spectrogram-oxidized.png) |
+| *Full spectrum detail* | *Warm, low-passed texture* |
 
 ## Background
 
