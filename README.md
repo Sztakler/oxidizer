@@ -2,6 +2,16 @@
 
 An audio transformer that makes everything sound like a Brownian noise ☺️🎧🌊
 
+## Demo
+
+| Version | Player |
+| :--- | :--- |
+| **Original** | [original.mp3](https://github.com/user-attachments/files/24984606/original.mp3)|
+| **Oxidized (Brown)** | [oxidized.mp3](https://github.com/user-attachments/files/24984608/oxidized.mp3)|
+
+> **Credits:** Music by **massobeats - rose water**. Processed with oxidizer CLI.
+
+
 ## Background
 
 Well, I got bored while studin' for my Psychology exams, so I procrastinated on this side project a bit. Oh, and recently I've realised that constantly listening to the Brown Noise during work keeps me focused.
