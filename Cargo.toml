@@ -3,6 +3,9 @@ name = "oxidizer"
 version = "0.1.0"
 edition = "2024"
 authors = ["metarth"]
+repository = "https://github.com/Sztakler/oxidizer"
+readme = "README.md"
+keywords = ["audio", "cli", "noise"]
 license = "MIT"
 
 [dependencies]
