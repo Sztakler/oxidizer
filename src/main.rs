@@ -31,18 +31,25 @@ impl Oxidizer {
         }
     }
 
-    fn process(&mut self, samples: Vec<f32>, algorithm: OxidizerAlgorithm) -> &mut Self {
+    fn consume(&mut self, samples: Vec<f32>) -> &mut Self {
+        for sample in samples {
+            self.buffer.push(sample);
+        }
+
+        self
+    }
+
+    fn process(&mut self, algorithm: OxidizerAlgorithm) -> &mut Self {
         let alpha = match algorithm {
             OxidizerAlgorithm::Light => 0.1,
             OxidizerAlgorithm::Brown => 0.02,
             OxidizerAlgorithm::Heavy => 0.005,
         };
 
-        for sample in samples {
-            let output = self.last_sample + alpha * (sample - self.last_sample);
+        for sample in &mut self.buffer {
+            let output = self.last_sample + alpha * (*sample - self.last_sample);
             self.last_sample = output;
-
-            self.buffer.push(output);
+            *sample = output
         }
 
         self
@@ -69,14 +76,20 @@ impl Oxidizer {
     fn apply_brownian_texture(&mut self, intensity: f32) -> &mut Self {
         let mut rng = rand::rng();
         let mut brown_noise_state: f32 = 0.0;
+        let step_size = 0.1;
+        let damping = 0.98;
+        let perceived_intensity = (10.0f32.powf(intensity) - 1.0) / 9.0;
 
         for sample in &mut self.buffer {
             // Generate Brown Noise step (random walk)
             let white_step: f32 = rng.random_range(-1.0..1.0);
-            brown_noise_state = (brown_noise_state + white_step).clamp(-1.0, 1.0);
+            // Smooth step
+            brown_noise_state =
+                (brown_noise_state * damping + white_step * step_size).clamp(-1.0, 1.0);
             let current_value = *sample;
-            *sample = (current_value * (1.0 - intensity))
-                + (brown_noise_state * intensity * current_value.abs());
+            let noise_mask = brown_noise_state * perceived_intensity;
+            let combined = current_value + noise_mask;
+            *sample = combined.tanh();
         }
 
         self
@@ -137,7 +150,8 @@ fn main() {
 
     println!("Oxidizing samples...");
     let output_samples = Oxidizer::new()
-        .process(input_samples, OxidizerAlgorithm::Brown)
+        .consume(input_samples)
+        .process(OxidizerAlgorithm::Brown)
         .apply_brownian_texture(0.15)
         .normalize()
         .collect_samples();
