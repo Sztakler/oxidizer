@@ -1,3 +1,4 @@
+use rand::Rng;
 use std::{f32, fs::File};
 use symphonia::{
     self,
@@ -63,6 +64,23 @@ impl Oxidizer {
     fn collect_samples(&mut self) -> Vec<f32> {
         std::mem::take(&mut self.buffer)
     }
+
+    // Voss-McCartney Filter Bank algorithm
+    fn apply_brownian_texture(&mut self, intensity: f32) -> &mut Self {
+        let mut rng = rand::rng();
+        let mut brown_noise_state: f32 = 0.0;
+
+        for sample in &mut self.buffer {
+            // Generate Brown Noise step (random walk)
+            let white_step: f32 = rng.random_range(-1.0..1.0);
+            brown_noise_state = (brown_noise_state + white_step).clamp(-1.0, 1.0);
+            let current_value = *sample;
+            *sample = (current_value * (1.0 - intensity))
+                + (brown_noise_state * intensity * current_value.abs());
+        }
+
+        self
+    }
 }
 
 fn load_mp3(path: &str) -> Vec<f32> {
@@ -117,13 +135,12 @@ fn load_mp3(path: &str) -> Vec<f32> {
 fn main() {
     let input_samples: Vec<f32> = load_mp3("the-smiths.mp3");
 
-    let mut oxidizer = Oxidizer::new();
-
     println!("Oxidizing samples...");
-    oxidizer
+    let output_samples = Oxidizer::new()
         .process(input_samples, OxidizerAlgorithm::Brown)
-        .normalize();
-    let output_samples = oxidizer.collect_samples();
+        .apply_brownian_texture(0.15)
+        .normalize()
+        .collect_samples();
 
     let spec = hound::WavSpec {
         channels: 1,

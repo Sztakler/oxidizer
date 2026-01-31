@@ -8,3 +8,4 @@ license = "MIT"
 [dependencies]
 symphonia = { version = "0.5", features = ["mp3", "isomp4"] }
 hound = "3.5"
+rand = "0.9.2"
