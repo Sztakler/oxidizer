@@ -66,7 +66,7 @@ cargo install --git https://github.com/Sztakler/oxidizer.git
 
 ### Clone and Build
 ```bash
-git clone [https://github.com/Sztakler/oxidizer.git](https://github.com/Sztakler/oxidizer.git)
+git clone https://github.com/Sztakler/oxidizer.git
 cd oxidizer
 cargo build --release
 cargo install --path .
