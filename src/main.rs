@@ -11,6 +11,31 @@ use symphonia::{
         meta::MetadataOptions,
     },
 };
+use clap::Parser;
+
+#[derive(Parser,Debug)]
+$[command(author, version, about = "An audio transformer that makes everything sound like a Brownian noise")]
+struct Args {
+    /// Path to the input file (e.g., music.mp3)
+    #[arg(short, long)]
+    input: String,
+    /// Path to the output file (e.g., output.wav)
+    #[arg(short, long, default_value = "output.wav")]
+    output: String,
+
+    /// The oxidation algorithm to use
+    #[arg(short, long, default_value = "brown")]
+    algorithm: String,
+
+    /// Intensity of the effect (0.0 to 1.0)
+    #[arg(short, long, default_value_t = 0.15)]
+    intensity: f32,
+
+    /// Apply an extra pass of the filter for more "rust"
+    #[arg(short, long, default_value_t = 1)]
+    passes: u32,
+}
+
 
 pub enum OxidizerAlgorithm {
     Light, // Pink Noise (warm and clean)
