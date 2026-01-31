@@ -29,7 +29,7 @@ There are three algorithms implemented, each tailored for a specific use-case:
 
 ## 🛠 Roadmap
 - [x] Multiple algorithms: Ability to generate an "oxidized" audio with different characteristics.
-- [ ] Stereo Spread: Independent Brownian generators for Left/Right channels.
+- [x] Stereo Spread: Independent Brownian generators for Left/Right channels.
 - [ ] Wow & Flutter: Subtle pitch modulations to emulate old tape motors.
 - [ ] Bit-Crushing: Optional "digital oxidation" for a more lo-fi grit.
 - [ ] Custom algorithms: Users can use their own audio transformation algorithms using Lua/Rust/Python scripts or smth, idk. Seems like a challenge to implement tho.
