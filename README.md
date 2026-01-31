@@ -2,14 +2,14 @@
 
 An audio transformer that makes everything sound like a Brownian noise ☺️🎧🌊
 
-## Demo
+## Demo 🎧
 
 | Version | Player |
 | :--- | :--- |
-| **Original** | [original.mp3](https://github.com/user-attachments/files/24984606/original.mp3)|
-| **Oxidized (Brown)** | [oxidized.mp3](https://github.com/user-attachments/files/24984608/oxidized.mp3)|
+| **Original** | [original.mp3](https://github.com/user-attachments/assets/a9f8599c-e704-4494-8b8b-e31233a499f6) |
+| **Oxidized (Brown)** | [oxidized.mp3](https://github.com/user-attachments/assets/b424db51-79bf-4d74-a72d-f5dc46c6b4e2)|
 
-> **Credits:** Music by **massobeats - rose water**. Processed with oxidizer CLI.
+> **Credits:** Music by **[massobeats - rose water](https://www.youtube.com/watch?v=xakBzg5atsM)**. Processed with oxidizer CLI.
 
 ### 📊 Visual Oxidation (Spectrogram Analysis)
 
