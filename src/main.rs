@@ -35,7 +35,7 @@ struct Args {
     #[arg(short = 'n', long, default_value_t = 0.05)]
     intensity: f32,
 
-    /// Intensity of the effect (0.0 to 1.0)
+    /// Sample rate of the audio (e.g. 44100 Hz)
     #[arg(short = 's', long, default_value_t = 44100)]
     sample_rate: u32,
 
