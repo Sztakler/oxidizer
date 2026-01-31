@@ -17,7 +17,7 @@ The following spectrograms illustrate the frequency response of the algorithm. N
 
 | Original Audio | Oxidized Audio |
 | :---: | :---: |
-| ![Original Spectrogram](assets/img/spectrogram-original.jpg) | ![Oxidized Spectrogram](assets/img/spectrogram-oxidized.png) |
+| ![Original Spectrogram](assets/img/spectrogram-original.png) | ![Oxidized Spectrogram](assets/img/spectrogram-oxidized.png) |
 | *Full spectrum detail* | *Warm, low-passed texture* |
 
 ## Background
