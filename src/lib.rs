@@ -35,3 +35,5 @@ pub mod processor;
 
 pub use error::{OxidizerError, Result};
 pub use processor::{OxidationLevel, Oxidizer};
+
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
