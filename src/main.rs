@@ -3,6 +3,7 @@ use oxidizer::OxidationAlgorithm;
 use oxidizer::error::Result;
 use oxidizer::io;
 use oxidizer::processor::Oxidizer;
+use oxidizer::processor::noise;
 use std::f32;
 
 #[derive(Parser, Debug)]
@@ -48,7 +49,7 @@ fn main() -> Result<()> {
         _ => OxidationAlgorithm::Brown,
     };
 
-    let mut oxidizer = Oxidizer::new();
+    let mut oxidizer = Oxidizer::new(noise::BrownianNoise::new(0.98, 0.1));
     oxidizer.consume(input_samples);
 
     for _ in 0..args.passes {
@@ -56,7 +57,7 @@ fn main() -> Result<()> {
     }
 
     let output_samples = oxidizer
-        .apply_brownian_texture(args.intensity)
+        .apply_noise_texture(args.intensity)
         .normalize()
         .collect_samples();
 

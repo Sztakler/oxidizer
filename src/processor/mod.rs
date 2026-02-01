@@ -1,30 +1,29 @@
 pub mod algorithms;
-
-use rand::Rng;
+pub mod noise;
 
 pub use algorithms::OxidationAlgorithm;
 
-pub struct Oxidizer {
+use crate::processor::noise::NoiseGenerator;
+
+pub struct Oxidizer<N: NoiseGenerator> {
+    noise_generator: N,
     last_l: f32,
     last_r: f32,
-    brown_state_l: f32,
-    brown_state_r: f32,
     buffer: Vec<f32>,
 }
 
-impl Default for Oxidizer {
+impl<N: NoiseGenerator + Default> Default for Oxidizer<N> {
     fn default() -> Self {
-        Self::new()
+        Self::new(N::default())
     }
 }
 
-impl Oxidizer {
-    pub fn new() -> Self {
+impl<N: NoiseGenerator> Oxidizer<N> {
+    pub fn new(noise_generator: N) -> Self {
         Self {
+            noise_generator,
             last_l: 0.0,
             last_r: 0.0,
-            brown_state_l: 0.0,
-            brown_state_r: 0.0,
             buffer: Vec::new(),
         }
     }
@@ -72,24 +71,17 @@ impl Oxidizer {
         std::mem::take(&mut self.buffer)
     }
 
-    // Leaky Random Walk
-    pub fn apply_brownian_texture(&mut self, intensity: f32) -> &mut Self {
-        let mut rng = rand::rng();
-        let step_size = 0.1;
-        let damping = 0.98;
+    pub fn apply_noise_texture(&mut self, intensity: f32) -> &mut Self {
         let perceived_intensity = (10.0f32.powf(intensity) - 1.0) / 9.0;
 
         for i in (0..self.buffer.len()).step_by(2) {
-            self.brown_state_l = (self.brown_state_l * damping
-                + (rng.random_range(-1.0..1.0) * step_size))
-                .clamp(-1.0, 1.0);
-            self.brown_state_r = (self.brown_state_r * damping
-                + (rng.random_range(-1.0..1.0) * step_size))
-                .clamp(-1.0, 1.0);
+            let noise_l = self.noise_generator.next_sample();
+            let noise_r = self.noise_generator.next_sample();
 
-            self.buffer[i] = (self.buffer[i] + self.brown_state_l * perceived_intensity).tanh();
-            self.buffer[i + 1] =
-                (self.buffer[i + 1] + self.brown_state_r * perceived_intensity).tanh();
+            self.buffer[i] = (self.buffer[i] + noise_l * perceived_intensity).tanh();
+            if i + 1 < self.buffer.len() {
+                self.buffer[i + 1] = (self.buffer[i + 1] + noise_r * perceived_intensity).tanh();
+            }
         }
 
         self
