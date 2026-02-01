@@ -8,6 +8,7 @@ use oxidizer::processor::noise;
 use oxidizer::processor::noise::NoiseGenerator;
 use std::f32;
 
+/// Command-line arguments for the Oxidizer application.
 #[derive(Parser, Debug)]
 #[command(
     author,
@@ -15,30 +16,31 @@ use std::f32;
     about = "An audio transformer that makes everything sound like a Brownian noise"
 )]
 struct Args {
-    /// Path to the input file (e.g., music.mp3)
+    /// Path to the input file (e.g., music.mp3). Supports multiple formats via Symphonia.
     #[arg(short, long)]
     input: String,
-    /// Path to the output file (e.g., output.wav)
-    #[arg(short, long, default_value = "output.wav")]
+
+    /// Path where the processed .wav file will be saved.    #[arg(short, long, default_value = "output.wav")]
     output: String,
 
-    /// The level of oxidation (muffled, deep, clear)
+    /// The level of oxidation. Options: 'muffled', 'deep', 'clear'.
     #[arg(short, long, default_value = "deep")]
     level: String,
 
-    /// The type of noise texture (brown, white)
+    /// The characteristic of the background hiss. 'brown' (bass-heavy) or 'white' (full-spectrum).
     #[arg(short, long, default_value = "brown")]
     noise: String,
 
-    /// Intensity of the effect (0.0 to 1.0)
+    /// Scale of the noise and saturation effect. Typically 0.0 (subtle) to 1.0 (crushed).
     #[arg(short = 't', long, default_value_t = 0.05)]
     intensity: f32,
 
-    /// Sample rate of the audio (e.g. 44100 Hz)
+    /// Sample rate for the output WAV file. Should match the input for pitch consistency. Lower rates may result in a slowed down audio (pitch-shift).
     #[arg(short = 's', long, default_value_t = 44100)]
     sample_rate: u32,
 
-    /// Apply an extra pass of the filter for more "rust"
+    /// Number of filter iterations.
+    /// Each pass doubles the filter slope (e.g., from 6dB/oct to 12dB/oct).
     #[arg(short, long, default_value_t = 1)]
     passes: u32,
 }
@@ -49,6 +51,7 @@ fn main() -> Result<()> {
     let input_path = std::path::Path::new(&args.input);
     let input_samples: Vec<f32> = io::load_audio(input_path)?;
 
+    // Dispatch processing based on selected noise generator
     let output_samples = match args.noise.as_str() {
         "white" => run_process(input_samples, noise::WhiteNoise::default(), &args)?,
         _ => run_process(input_samples, noise::BrownianNoise::default(), &args)?,
@@ -59,10 +62,12 @@ fn main() -> Result<()> {
     Ok(())
 }
 
+// Orchestrates the oxidation pipeline using a generic noise generator.
 fn run_process<N: NoiseGenerator>(samples: Vec<f32>, noise: N, args: &Args) -> Result<Vec<f32>> {
     let mut oxidizer = Oxidizer::new(noise);
     let level = OxidationLevel::try_from_str(&args.level).map_err(OxidizerError::InvalidValue)?;
 
+    // Ownership-based pipeline (zero-copy)
     let processed = oxidizer
         .consume(samples)
         .process_multiple(level, args.passes)
