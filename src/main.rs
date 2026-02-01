@@ -47,14 +47,14 @@ fn main() -> Result<()> {
     let args = Args::parse();
 
     let input_path = std::path::Path::new(&args.input);
-    let mut samples: Vec<f32> = io::load_audio(input_path)?;
+    let input_samples: Vec<f32> = io::load_audio(input_path)?;
 
-    samples = match args.noise.as_str() {
-        "white" => run_process(samples, noise::WhiteNoise::default(), &args)?,
-        _ => run_process(samples, noise::BrownianNoise::default(), &args)?,
+    let output_samples = match args.noise.as_str() {
+        "white" => run_process(input_samples, noise::WhiteNoise::default(), &args)?,
+        _ => run_process(input_samples, noise::BrownianNoise::default(), &args)?,
     };
 
-    io::save_audio(&args.output, samples, args.sample_rate)?;
+    io::save_audio(&args.output, output_samples, args.sample_rate)?;
 
     Ok(())
 }
