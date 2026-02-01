@@ -16,10 +16,10 @@
 //!
 //! ```rust
 //! use oxidizer::{Oxidizer, OxidationLevel};
-//! use oxidizer::processor::noise::BrownNoise;
+//! use oxidizer::processor::noise::BrownianNoise;
 //!
 //! let samples = vec![0.0; 44100]; // Your audio data
-//! let mut ox = Oxidizer::new(BrownNoise::default());
+//! let mut ox = Oxidizer::new(BrownianNoise::default());
 //!
 //! let processed = ox.consume(samples)
 //!     .process(OxidationLevel::Deep)
