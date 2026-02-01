@@ -106,6 +106,7 @@ oxidizer -i music.mp3 -l muffled --passes 3 --intensity 0.02
 | `-p, --passes`      | Number of filter iterations (stacks the slope)   | `1` |
 | `-s, --sample-rate` | Output sample rate (e.g., 44100, 48000)          | `44100`     |
 
+> **Note on Sample Rate**: Ensure the sample rate matches your input for pitch consistency. Lowering the rate manually (e.g., setting -s 22050 for a 441k file) will result in a "slowed down" tape effect (which sounds pretty cool imho).
 
 ## ⚙️ Built With
 
