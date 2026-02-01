@@ -1,20 +1,9 @@
 use clap::Parser;
 use oxidizer::OxidationAlgorithm;
+use oxidizer::error::Result;
 use oxidizer::io;
 use oxidizer::processor::Oxidizer;
-use rand::Rng;
-use std::{f32, fs::File};
-use symphonia::{
-    self,
-    core::{
-        audio::Signal,
-        codecs::{CODEC_TYPE_MP3, DecoderOptions},
-        errors::Error,
-        formats::FormatOptions,
-        io::MediaSourceStream,
-        meta::MetadataOptions,
-    },
-};
+use std::f32;
 
 #[derive(Parser, Debug)]
 #[command(
@@ -71,6 +60,6 @@ fn main() -> Result<()> {
         .normalize()
         .collect_samples();
 
-    save_audio(&args.output, output_samples, args.sample_rate);
+    io::save_audio(&args.output, output_samples, args.sample_rate)?;
     Ok(())
 }

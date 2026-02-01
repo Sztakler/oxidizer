@@ -37,11 +37,11 @@ impl Oxidizer {
         self
     }
 
-    pub fn process(&mut self, algorithm: Algorithm) -> &mut Self {
+    pub fn process(&mut self, algorithm: OxidationAlgorithm) -> &mut Self {
         let alpha = match algorithm {
-            Algorithm::Light => 0.1,
-            Algorithm::Brown => 0.02,
-            Algorithm::Heavy => 0.005,
+            OxidationAlgorithm::Light => 0.1,
+            OxidationAlgorithm::Brown => 0.02,
+            OxidationAlgorithm::Heavy => 0.005,
         };
 
         for i in (0..self.buffer.len()).step_by(2) {
