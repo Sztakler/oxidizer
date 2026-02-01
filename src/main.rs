@@ -49,7 +49,7 @@ fn main() -> Result<()> {
         _ => OxidationAlgorithm::Brown,
     };
 
-    let mut oxidizer = Oxidizer::new(noise::BrownianNoise::new(0.98, 0.1));
+    let mut oxidizer = Oxidizer::new(noise::WhiteNoise::default());
     oxidizer.consume(input_samples);
 
     for _ in 0..args.passes {
