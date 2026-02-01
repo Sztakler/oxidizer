@@ -33,9 +33,15 @@ impl<N: NoiseGenerator> Oxidizer<N> {
 
     /// Takes ownership of the input sample vector.
     /// This is a zero-copy operation that reuses the allocated memory of the input vector.
-    pub fn consume(&mut self, samples: Vec<f32>) -> &mut Self {
-        self.buffer = samples;
+    pub fn consume(&mut self, mut samples: Vec<f32>) -> &mut Self {
+        // Sanitize samples
+        samples.iter_mut().for_each(|s| {
+            if !s.is_finite() {
+                *s = 0.0;
+            }
+        });
 
+        self.buffer = samples;
         self
     }
 
