@@ -103,3 +103,122 @@ impl<N: NoiseGenerator> Oxidizer<N> {
         self
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::processor::noise::WhiteNoise;
+
+    #[test]
+    fn test_consume_and_collect() {
+        let mut oxidizer = Oxidizer::new(WhiteNoise::default());
+        let data = vec![0.5, -0.5, 0.2];
+        let output = oxidizer.consume(data.clone()).collect_samples();
+        assert_eq!(data, output);
+    }
+
+    #[test]
+    fn test_normalization_bounds() {
+        let mut oxidizer = Oxidizer::new(WhiteNoise::default());
+        // Sample way over limit 1.0
+        oxidizer.consume(vec![5.0, -2.0]);
+        oxidizer.normalize();
+        let samples = oxidizer.collect_samples();
+
+        let max_peak = samples.iter().map(|s| s.abs()).fold(0.0, f32::max);
+        // Should be cut off to exactly 0.95
+        assert!((max_peak - 0.95).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_filter_smoothing() {
+        let mut oxidizer = Oxidizer::new(WhiteNoise::default());
+        // Jumpy signal: 0, 1, 0 ,1, ...
+        let input = vec![0.0, 1.0, 0.0, 1.0];
+        oxidizer.consume(input);
+        oxidizer.process(OxidationLevel::Muffled);
+        let output = oxidizer.collect_samples();
+
+        // When using `Muffled` value (alpha 0.005), signal shouldn't
+        // be able to jump to 1.0. It should be very smooth.
+        assert!(output[1] < 0.1);
+    }
+
+    #[test]
+    fn test_multiple_passes_attenuation() {
+        // Generate clean zig-zag signal (square wave of Nyquist frequency)
+        let input: Vec<f32> = (0..2000)
+            .map(|i| if i % 2 == 0 { 0.5 } else { -0.5 })
+            .collect();
+
+        // Highest level
+        let level = OxidationLevel::Muffled;
+
+        // First pass
+        let mut ox1 = Oxidizer::new(WhiteNoise::default());
+        let res1 = ox1
+            .consume(input.clone())
+            .process_multiple(level, 1)
+            .collect_samples();
+
+        // Ten continuous passes
+        let mut ox2 = Oxidizer::new(WhiteNoise::default());
+        let res2 = ox2
+            .consume(input)
+            .process_multiple(level, 10)
+            .collect_samples();
+
+        // Calculate RMS (Root Mean Square) = signal's energy
+        let rms1 = (res1.iter().map(|s| s * s).sum::<f32>() / res1.len() as f32).sqrt();
+        let rms2 = (res2.iter().map(|s| s * s).sum::<f32>() / res2.len() as f32).sqrt();
+
+        println!("RMS 1 pass: {}, RMS 10 passes: {}", rms1, rms2);
+
+        // RMS after the single pass should be higher than after 10 passes
+        assert!(
+            rms2 < rms1,
+            "Energy after 10 passes ({}) should be lower than after 1 pass ({})",
+            rms2,
+            rms1
+        );
+    }
+
+    #[test]
+    fn test_saturation_limits() {
+        let mut oxidizer = Oxidizer::new(WhiteNoise::default());
+        // Very high intensity of both the noise and the signal
+        oxidizer.consume(vec![2.0, -2.0]);
+        oxidizer.apply_noise_texture(1.0);
+        let output = oxidizer.collect_samples();
+
+        // tanh should never exceed +-1.0
+        for sample in output {
+            assert!(sample.abs() <= 1.0);
+        }
+    }
+
+    #[test]
+    fn test_stereo_noise_decorrelation() {
+        let mut oxidizer = Oxidizer::new(WhiteNoise::default());
+        // Noise over silence
+        let input = vec![0.0; 1000];
+        let output = oxidizer
+            .consume(input)
+            .apply_noise_texture(1.0)
+            .collect_samples();
+
+        // Check L and R samples
+        let mut identical_samples = 0;
+        for i in (0..output.len()).step_by(2) {
+            if (output[i] - output[i + 1]).abs() < 1e-6 {
+                identical_samples += 1;
+            }
+        }
+
+        // If the noise is stereo, L and R samples should be identical
+        assert!(
+            identical_samples < 100,
+            "Left and Right channels should have decorrelated noise for spatial width"
+        );
+    }
+}
