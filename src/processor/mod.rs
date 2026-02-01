@@ -1,7 +1,7 @@
-pub mod algorithms;
+pub mod levels;
 pub mod noise;
 
-pub use algorithms::OxidationAlgorithm;
+pub use levels::OxidationLevel;
 
 use crate::processor::noise::NoiseGenerator;
 
@@ -36,12 +36,8 @@ impl<N: NoiseGenerator> Oxidizer<N> {
         self
     }
 
-    pub fn process(&mut self, algorithm: OxidationAlgorithm) -> &mut Self {
-        let alpha = match algorithm {
-            OxidationAlgorithm::Light => 0.1,
-            OxidationAlgorithm::Brown => 0.02,
-            OxidationAlgorithm::Heavy => 0.005,
-        };
+    pub fn process(&mut self, level: OxidationLevel) -> &mut Self {
+        let alpha = level.alpha();
 
         for i in (0..self.buffer.len()).step_by(2) {
             self.last_l = self.last_l + alpha * (self.buffer[i] - self.last_l);
@@ -82,6 +78,14 @@ impl<N: NoiseGenerator> Oxidizer<N> {
             if i + 1 < self.buffer.len() {
                 self.buffer[i + 1] = (self.buffer[i + 1] + noise_r * perceived_intensity).tanh();
             }
+        }
+
+        self
+    }
+
+    pub fn process_multiple(&mut self, level: OxidationLevel, passes: u32) -> &mut Self {
+        for _ in 0..passes {
+            self.process(level);
         }
 
         self

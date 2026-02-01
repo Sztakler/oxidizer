@@ -4,6 +4,8 @@ use thiserror::Error;
 pub enum OxidizerError {
     #[error("IO error: {0}")]
     Io(#[from] std::io::Error),
+    #[error("Invalid value: {0}")]
+    InvalidValue(String),
     #[error("Decoding failed: {0}")]
     Decoding(String),
     #[error("Encoding failed {0}")]
