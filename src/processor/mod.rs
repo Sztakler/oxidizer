@@ -31,7 +31,7 @@ impl Oxidizer {
         }
     }
 
-    fn consume(&mut self, samples: Vec<f32>) -> &mut Self {
+    pub fn consume(&mut self, samples: Vec<f32>) -> &mut Self {
         for sample in samples {
             self.buffer.push(sample);
         }
@@ -39,7 +39,7 @@ impl Oxidizer {
         self
     }
 
-    fn process(&mut self, algorithm: Algorithm) -> &mut Self {
+    pub fn process(&mut self, algorithm: Algorithm) -> &mut Self {
         let alpha = match algorithm {
             Algorithm::Light => 0.1,
             Algorithm::Brown => 0.02,
@@ -57,7 +57,7 @@ impl Oxidizer {
         self
     }
 
-    fn normalize(&mut self) -> &mut Self {
+    pub fn normalize(&mut self) -> &mut Self {
         let max_peak = self.buffer.iter().map(|s| s.abs()).fold(0.0, f32::max);
 
         if max_peak > 0.0 {
@@ -70,12 +70,12 @@ impl Oxidizer {
         self
     }
 
-    fn collect_samples(&mut self) -> Vec<f32> {
+    pub fn collect_samples(&mut self) -> Vec<f32> {
         std::mem::take(&mut self.buffer)
     }
 
     // Leaky Random Walk
-    fn apply_brownian_texture(&mut self, intensity: f32) -> &mut Self {
+    pub fn apply_brownian_texture(&mut self, intensity: f32) -> &mut Self {
         let mut rng = rand::rng();
         let step_size = 0.1;
         let damping = 0.98;
