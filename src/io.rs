@@ -9,7 +9,7 @@ use symphonia::core::{
     meta::MetadataOptions,
 };
 
-pub fn load_mp3(path: &std::path::Path) -> Result<Vec<f32>> {
+pub fn load_audio(path: &std::path::Path) -> Result<Vec<f32>> {
     let src = File::open(path)?;
     let mss = MediaSourceStream::new(Box::new(src), Default::default());
 
