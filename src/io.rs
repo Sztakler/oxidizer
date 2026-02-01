@@ -2,7 +2,7 @@ use crate::error::{OxidizerError, Result};
 use std::fs::File;
 use symphonia::core::{
     audio::Signal,
-    codecs::{CODEC_TYPE_MP3, DecoderOptions},
+    codecs::{CODEC_TYPE_NULL, DecoderOptions},
     errors::Error,
     formats::FormatOptions,
     io::MediaSourceStream,
@@ -27,8 +27,8 @@ pub fn load_audio(path: &std::path::Path) -> Result<Vec<f32>> {
     let track = format
         .tracks()
         .iter()
-        .find(|t| t.codec_params.codec == CODEC_TYPE_MP3)
-        .ok_or_else(|| OxidizerError::Decoding("No MP3 track found in file".to_string()))?;
+        .find(|t| t.codec_params.codec != CODEC_TYPE_NULL)
+        .ok_or_else(|| OxidizerError::Decoding("No supported audio track found".to_string()))?;
 
     let mut decoder = symphonia::default::get_codecs()
         .make(&track.codec_params, &DecoderOptions::default())
