@@ -4,6 +4,23 @@ pub trait NoiseGenerator {
     fn next_sample(&mut self) -> f32;
 }
 
+/// Simple White Noise (radio static)
+pub struct WhiteNoise;
+
+impl Default for WhiteNoise {
+    fn default() -> Self {
+        Self
+    }
+}
+
+impl NoiseGenerator for WhiteNoise {
+    fn next_sample(&mut self) -> f32 {
+        let mut rng = rand::rng();
+        rng.random_range(-1.0..1.0)
+    }
+}
+
+// Leaky Random Walk (Brown Noise)
 pub struct BrownianNoise {
     state: f32,
     damping: f32,
@@ -26,7 +43,6 @@ impl BrownianNoise {
     }
 }
 
-// Leaky Random Walk
 impl NoiseGenerator for BrownianNoise {
     fn next_sample(&mut self) -> f32 {
         let mut rng = rand::rng();
