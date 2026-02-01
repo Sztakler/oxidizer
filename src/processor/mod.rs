@@ -29,9 +29,7 @@ impl<N: NoiseGenerator> Oxidizer<N> {
     }
 
     pub fn consume(&mut self, samples: Vec<f32>) -> &mut Self {
-        for sample in samples {
-            self.buffer.push(sample);
-        }
+        self.buffer = samples;
 
         self
     }
